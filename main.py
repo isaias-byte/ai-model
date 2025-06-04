@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 file_path = "card_transdata.csv"
 data = pd.read_csv(file_path)
@@ -30,3 +31,68 @@ print(duplicate_rows)
 # Clean the dataset by removing rows with missing values and duplicates
 data.dropna(axis=0, inplace=True)
 data.drop_duplicates(inplace=True)
+
+# checking security of pin and chip transactions
+chippindf = data[["used_chip", "used_pin_number", "fraud"]]
+total_transactions = len(chippindf)
+total_fraud = chippindf["fraud"].sum()
+fraud_by_chip = chippindf[chippindf["used_chip"] == 1]["fraud"].sum()
+fraud_by_pin = chippindf[chippindf["used_pin_number"] == 1]["fraud"].sum()
+
+print("\n\nTotal Transactions:", total_transactions)
+print("Total fraud cases:", total_fraud)
+print(f"Fraud cases using chip: {fraud_by_chip} out of {total_transactions}")
+print(f"Fraud cases using pin number: {fraud_by_pin} out of {total_transactions}")
+
+labels = ["Non-Fraud", "Fraud"]
+chip_sizes = [total_transactions - fraud_by_chip, fraud_by_chip]
+colors = ["lightskyblue", "lightcoral"]
+pin_sizes = [total_transactions - fraud_by_chip, fraud_by_pin]
+
+plt.figure(figsize=(12,6))
+plt.subplot(1, 2, 1)
+plt.pie(chip_sizes, labels=labels, colors=colors, startangle=140)
+plt.axis("equal")
+plt.title("Chip Transactions")
+
+plt.subplot(1, 2, 2)
+plt.pie(pin_sizes, labels=labels, colors=colors, startangle=140)
+plt.axis("equal")
+plt.title("Pin Transactions")
+
+plt.suptitle("Fraud cases in Chip and Pin transactions")
+plt.show()
+
+
+# Correlation between transaction amount and fraud
+correlation_df = data[["ratio_to_median_purchase_price", "fraud"]]
+correlation = correlation_df["ratio_to_median_purchase_price"].corr(correlation_df["fraud"])
+print(f"\n\nCorrelation between transaction amount and fraud: {correlation}")
+
+avg_non_fraud_transactions = correlation_df[correlation_df["fraud"] == 0]["ratio_to_median_purchase_price"].mean()
+avg_fraud_transactions = correlation_df[correlation_df["fraud"] == 1]["ratio_to_median_purchase_price"].mean()
+print(f"Average ratio to median purchase price for non fraudulent transactions: {avg_non_fraud_transactions}")
+print(f"Average ratio to median purchase price for fraudulent transactions: {avg_fraud_transactions}")
+
+categories = ["Non-Fraudulent", "Fraudulent"]
+average_ratio = [avg_non_fraud_transactions, avg_fraud_transactions]
+plt.bar(categories, average_ratio, color=["blue", "red"])
+plt.title("Ratio to Median Purchase Price")
+plt.xlabel("Fraud category")
+plt.ylabel("Average ratio to median purchase price")
+plt.show()
+
+
+# Checking fraud cases in online transactions
+online_order_df = data[["online_order", "fraud"]]
+total_online_orders = online_order_df["online_order"].sum()
+total_online_fraud = online_order_df[(online_order_df["fraud"] == 1) & (online_order_df["online_order"] == 1)]["fraud"].count()
+fraud_rate_online = total_online_fraud / total_online_orders
+
+total_offline_orders = len(online_order_df) - total_online_orders
+total_offline_fraud = online_order_df[(online_order_df["fraud"] == 1) & (online_order_df["online_order"] == 0)]["fraud"].count()
+fraud_rate_offline = total_offline_fraud / total_offline_orders
+print(f"\n\nFraud rate for online transactions: {fraud_rate_online:.2%} ({total_online_fraud} cases out of "
+      f"{total_online_orders} online transactions)")
+print(f"Fraud rate for offline transactions: {fraud_rate_offline:.2%} ({total_offline_fraud} cases out of "
+      f"{total_offline_orders} offline transactions)")
