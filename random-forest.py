@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt  # For plotting (currently unused)
 import seaborn as sns            # For advanced plotting (currently unused)
 from sklearn.ensemble import RandomForestClassifier # The specific algorithm we're using
 from sklearn.model_selection import train_test_split  # Utility to split data
+import joblib
 
 # Load the Data
 file_path = "card_transdata.csv"
@@ -32,6 +33,9 @@ rf_classifier = RandomForestClassifier(random_state=42)
 # The model learns patterns linking the features (x_train) to the outcome (y_train).
 rf_classifier.fit(x_train, y_train)
 
+joblib.dump(rf_classifier, 'rf_fraud_model.joblib')
+print("AI Model successfully saved as  rf_fraud_model.joblib!")
+
 # --- (Optional Feature Importance Check) ---
 # These lines (if uncommented) would show which features the model found most important.
 # feature_importances = pd.Series(rf_classifier.feature_importances_, index=x.columns).sort_values(ascending=False)
@@ -40,29 +44,29 @@ rf_classifier.fit(x_train, y_train)
 
 # Test with a sample transaction (from existing data)
 # This just demonstrates taking a random sample from the original data.
-new_transaction_features = data.sample(1).drop("fraud", axis=1)
-print("Randomly sampled features of new transaction")
-print(new_transaction_features)
+# new_transaction_features = data.sample(1).drop("fraud", axis=1)
+# print("Randomly sampled features of new transaction")
+# print(new_transaction_features)
 
 # Test with a new, manually defined transaction
 # Create a new DataFrame representing one new transaction.
 # The model has never seen this specific data point.
-new_transaction_features1 = pd.DataFrame({
-    'distance_from_home': [7],
-    'distance_from_last_transaction': [3],
-    'ratio_to_median_purchase_price': [0.1],
-    'repeat_retailer': [0],
-    'used_chip': [1],
-    'used_pin_number': [0],
-    'online_order': [0]
-})
+# new_transaction_features1 = pd.DataFrame({
+#     'distance_from_home': [7],
+#     'distance_from_last_transaction': [3],
+#     'ratio_to_median_purchase_price': [0.1],
+#     'repeat_retailer': [0],
+#     'used_chip': [1],
+#     'used_pin_number': [0],
+#     'online_order': [0]
+# })
 
 # Make a Prediction
 # Use the trained model (.predict()) to predict the outcome for the new manual transaction.
-prediction = rf_classifier.predict(new_transaction_features1)
+# prediction = rf_classifier.predict(new_transaction_features1)
 
 # Display the Result
 # The 'prediction' variable is an array (e.g., [0] or [1]).
 # We check the first element (prediction[0]) to give a clean output.
-print("Prediction for new transaction:")
-print("Fraud" if prediction[0] == 1 else "Legitimate")
+# print("Prediction for new transaction:")
+# print("Fraud" if prediction[0] == 1 else "Legitimate")
